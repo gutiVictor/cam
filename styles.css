@@ -1,0 +1,101 @@
+:root {
+    --primary-color: #1e90ff; /* Azul brillante */
+    --primary-color-hover: #1c86ee; /* Azul más oscuro para el hover */
+    --border-radius: 10px;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --font-family: 'Roboto', sans-serif;
+    --bg-color: #121212; /* Fondo oscuro */
+    --text-color: #e0e0e0; /* Texto claro */
+    --input-bg: #333; /* Fondo de inputs */
+    --input-border: #444; /* Borde de inputs */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 20px;
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    color: var(--text-color);
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--text-color);
+}
+
+video, canvas {
+    border: 2px solid #444;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: var(--box-shadow);
+    transition: background-color 0.3s ease;
+    margin: 10px 5px;
+}
+
+button:hover {
+    background-color: var(--primary-color-hover);
+}
+
+#filename {
+    padding: 10px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    width: 100%;
+    max-width: 300px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    video, canvas {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    button {
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    #filename {
+        width: 100%;
+    }
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Captura y Redimensión de Fotos</title>
+</head>
+<body>
+    <h1>Captura y Redimensión de Fotos</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+    <button id="capture">Capturar Foto</button>
+
+    <label for="filenameSelect">Nombre del archivo:</label>
+    <select id="filenameSelect">
+        <option value="">Selecciona un nombre</option>
+        <option value="TOY">TOY</option>
+        <option value="FAR">FAR</option>
+        <option value="DIM">DIM</option>
+        <option value="JOS">JOS</option>
+        <option value="OTROS">OTROS</option>
+    </select>
+
+    <label for="reference">Referencia:</label>
+    <input type="text" id="reference" placeholder="Referencia" />
+
+    <label for="altura">Altura:</label>
+    <input type="number" id="altura" placeholder="Altura en cm" />
+
+    <label for="largo">Largo:</label>
+    <input type="number" id="largo" placeholder="Largo en cm" />
+
+    <label for="ancho">Ancho:</label>
+    <input type="number" id="ancho" placeholder="Ancho en cm" />
+
+    <button id="save">Guardar Foto</button>
+
+    <label for="cameraSelect">Seleccionar Cámara:</label>
+    <select id="cameraSelect">
+        <option value="">Selecciona una cámara</option>
+    </select>
+    
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture');
+        const saveButton = document.getElementById('save');
+        const context = canvas.getContext('2d');
+        const filenameSelect = document.getElementById('filenameSelect');
+        const referenceInput = document.getElementById('reference');
+        const alturaInput = document.getElementById('altura');
+        const largoInput = document.getElementById('largo');
+        const anchoInput = document.getElementById('ancho');
+        const cameraSelect = document.getElementById('cameraSelect');
+
+        async function getVideoDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                return devices.filter(device => device.kind === 'videoinput');
+            } catch (error) {
+                console.error('Error al obtener los dispositivos de video:', error);
+                return [];
+            }
+        }
+
+        async function startCamera(deviceId) {
+            try {
+                const constraints = {
+                    video: {
+                        deviceId: deviceId ? { exact: deviceId } : undefined,
+                        facingMode: { exact: "environment" }  // Forza el uso de la cámara trasera
+                    }
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+            } catch (error) {
+                console.error("Error al acceder a la cámara:", error);
+                alert("Es necesario conceder permisos de cámara para usar esta funcionalidad.");
+            }
+        }
+
+        async function populateCameraSelect() {
+            try {
+                const videoDevices = await getVideoDevices();
+                if (videoDevices.length === 0) {
+                    throw new Error('No se encontraron dispositivos de video.');
+                }
+
+                cameraSelect.innerHTML = '<option value="">Selecciona una cámara</option>'; // Limpiar opciones anteriores
+
+                videoDevices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Cámara ${cameraSelect.length + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                // Iniciar cámara con la primera opción seleccionada por defecto
+                if (videoDevices.length > 0) {
+                    cameraSelect.value = videoDevices[0].deviceId;
+                    startCamera(videoDevices[0].deviceId);
+                }
+            } catch (error) {
+                console.error('Error al poblar la lista de cámaras:', error);
+            }
+        }
+
+        cameraSelect.addEventListener('change', () => {
+            const selectedDeviceId = cameraSelect.value;
+            if (selectedDeviceId) {
+                startCamera(selectedDeviceId);
+            }
+        });
+
+        captureButton.addEventListener('click', () => {
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+            canvas.width = videoWidth;
+            canvas.height = videoHeight;
+
+            const scaleX = canvas.width / videoWidth;
+            const scaleY = canvas.height / videoHeight;
+            const scale = Math.min(scaleX, scaleY);
+
+            const x = (canvas.width / 2) - (videoWidth / 2) * scale;
+            const y = (canvas.height / 2) - (videoHeight / 2) * scale;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(video, x, y, videoWidth * scale, videoHeight * scale);
+        });
+
+        function compressImage(canvas, quality = 0.6) {
+            return canvas.toDataURL('image/jpeg', quality);
+        }
+
+        saveButton.addEventListener('click', () => {
+            const filenameSelectValue = filenameSelect.value.trim();
+            const reference = referenceInput.value.trim();
+            const altura = alturaInput.value.trim();
+            const largo = largoInput.value.trim();
+            const ancho = anchoInput.value.trim();
+
+            if (!filenameSelectValue) {
+                alert('Por favor, selecciona un nombre de archivo.');
+                return;
+            }
+
+            const filename = filenameSelectValue === 'OTROS'
+                ? `foto_${reference}_${altura}_${largo}_${ancho}`
+                : `${filenameSelectValue} ${reference} ${altura}_${largo}_${ancho}`;
+
+            const compressedImage = compressImage(canvas, 0.6);
+            const link = document.createElement('a');
+            link.href = compressedImage;
+            link.download = `${filename}.jpg`;
+            link.click();
+        });
+
+        populateCameraSelect();
+    </script>
+</body>
+</html>
